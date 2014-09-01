@@ -1,0 +1,58 @@
+<openerp>
+	<data>
+		
+		<record id="product_product_tree_pricelist_view" model="ir.ui.view">
+            <field name="name">product.product.tree.pricelist</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="standard_price" position="after">
+                	<field name="suggest_price"/>
+                	<field name="real_price"/>               
+                </field>         
+            </field>
+       </record>
+		
+		<record id="view_product_standard_price_form_dsp" model="ir.ui.view">
+            <field name="name">product.product.standard.price.form.inherit.dsp</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="stock.view_product_standard_price_form"/>
+            <field name="arch" type="xml">
+                        
+            	<xpath expr="/form/sheet/notebook/page[@string='Information']/group/group[1]/field[@name='list_price']" position="attributes">
+            		<attribute name="invisible">True</attribute>           	
+            	</xpath>
+            	
+                
+            	<label for="standard_price" position="replace">
+                    <label for="standard_price" string="SG to JKT Warehouse Cost"/>
+                </label>
+            
+            </field>
+        </record>
+		
+	
+        <record id="product_normal_form_pricelist_view" model="ir.ui.view">
+            <field name="name">product.normal.pricelist.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+            	
+	            <xpath expr="/form/sheet/notebook/page[@string='Sales']" position="after">
+	                <page string="Price List" groups="base.group_erp_manager">
+	                	<group>
+		                	<field name="base_cost" readonly="1"/>
+		                	<label for="margin"/>
+			                <div>
+			                    <field name="margin" class="oe_inline"/> percent
+			                </div>
+		                	<field name="suggest_price"/>
+		                	<field name="real_price"/>
+	                	</group>               
+	                </page>
+	            </xpath>
+            </field>
+        </record>
+        
+	</data>
+</openerp>

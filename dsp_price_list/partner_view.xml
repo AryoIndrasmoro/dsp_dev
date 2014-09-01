@@ -1,0 +1,41 @@
+<openerp>
+	<data>
+		
+		<!--
+<record id="view_partner_property_pricelist_form" model="ir.ui.view">
+            <field name="name">res.partner.purchase.property.pricelist.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <field name="property_product_pricelist" position="after">
+                    <field name="dsp_price_list_id" />
+                </field>
+            </field>
+        </record>-->
+
+        
+        <record id="view_partner_property_pricelist_form" model="ir.ui.view">
+            <field name="name">view.partner.property.pricelist.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="product.view_partner_property_form"/>
+            <field name="arch" type="xml">
+                <!--
+<xpath expr="//page/group/field[@name='property_invoice_type']" position="after">
+             		<field name="dsp_price_list_id" />     
+                </xpath>-->
+				
+                <field name="property_product_pricelist" position="after">
+                	<field name="dsp_price_list_id"/>
+                	<label for="outlet_margin"/>
+	                <div>
+	                    <field name="outlet_margin" class="oe_inline"/> percent
+	                </div>
+               	</field>
+            	
+               	
+            
+            </field>
+        </record>
+	
+	</data>
+</openerp>

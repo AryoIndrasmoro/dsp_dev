@@ -1,0 +1,48 @@
+<openerp>
+	<data>
+		<record id="view_picking_consignment_out_form" model="ir.ui.view">
+			<field name="name">delivery.stock.picking.consignment.out.form.view</field>
+			<field name="model">stock.picking.out</field>
+			<field name="inherit_id" ref="stock.view_picking_form"/>
+			<field name="arch" type="xml">
+				<field name="stock_journal_id" position="after">
+					<field name="consignment" readonly="1"/>
+				</field>
+
+				<button name="action_process" position="after">
+					<button name="action_process" string="Confirm" type="object" class="oe_highlight" attrs="{'invisible': ['|',('consignment','!=','consignment'),('state','!=','assigned')]}"/>
+				</button>
+
+			</field>
+		</record>
+
+		<record id="view_picking_out_delivery_form" model="ir.ui.view">
+			<field name="name">stock.picking.out.delivery.form</field>
+			<field name="model">stock.picking.out</field>
+			<field name="inherit_id" ref="stock.view_picking_out_form"/>
+			<field name="arch" type="xml">
+				<data>
+					<button name="action_process" position="replace">
+						<button name="action_process" string="Deliver" type="object" class="oe_highlight" attrs="{'invisible': ['|',('consignment','!=','normal'),('state','!=','assigned')]}"/>
+					</button>
+				</data>
+			</field>
+		</record>
+		
+		
+		<record id="view_picking_cancel_form" model="ir.ui.view">
+            <field name="name">stock.picking.cancel.form</field>
+            <field name="model">stock.picking.out</field>
+            <field name="inherit_id" ref="stock.view_picking_out_form"/>
+            <field name="arch" type="xml">
+				<data>
+				<button name="button_cancel" position="replace">
+					<button name="button_cancel" string="Cancel Transfer" attrs="{'invisible': ['|',('consignment','=','consignment'),('state','not in',['assigned','confirmed','draft'])]}" groups="base.group_user"/>
+<!--					<attribute name="attrs">{'invisible': ['|',('consignment','=','consignment'),('state','not in',['assigned','confirmed','draft'])]}</attribute-->
+				</button>
+				</data>
+			</field>
+		</record>
+			
+	</data>
+</openerp>

@@ -1,0 +1,23 @@
+<openerp>
+	<data>
+		
+    	<record id="view_order_payment_alert_form" model="ir.ui.view">
+            <field name="name">sale.order.payment.alert</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+            	<data>
+            		<xpath expr="/form/sheet/notebook/page[@string='Other Information']" position="after">
+            			<page string="Outstanding" groups="base.group_erp_manager">
+            				<group>
+	            				<field name="by_pass_payment"/>
+	            				<field name="note_pass_payment" attrs="{'invisible': [('by_pass_payment', '=', False)],'required': [('by_pass_payment', '=', True)]}"/>
+	            			</group>           			
+            			</page>	
+            		</xpath>	
+            	
+            	</data>
+            </field>
+    	</record>
+    </data>
+ </openerp>

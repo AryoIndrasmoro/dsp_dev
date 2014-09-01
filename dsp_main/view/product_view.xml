@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    <record id="product_normal_form_view_inherit" model="ir.ui.view">
+		<field name="name">product.normal.form.inherit</field>
+		<field name="model">product.product</field>
+		<field name="inherit_id" ref="product.product_normal_form_view"/>
+		<field name="arch" type="xml">
+			<page string="Information" position="after">
+				<page string="Wine Description">
+					<group>
+						<group>
+							<field name="country_id"/>
+							<field name="region_id"/>
+						</group>
+						<group>
+							<field name="type_id"/>
+							<field name="appelation_id"/>
+						</group>				
+						<group>
+							<field name="vintages" string="Vintage"/>	
+							<field name="classification"/>
+							<field name="grape_id"/>
+						</group>
+						<group>
+							<field name="volume_l"/>
+							<field name="volume_alcohol"/>
+						</group>										
+					</group>
+				</page>
+			</page>
+			<field name="description" position="before">
+
+			</field>
+		</field>
+	</record>
+	
+	<record id="product_product_tree_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.tree.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+        	<field name="name" position="after">
+        		<field name="vintages" />
+        	</field>
+        </field>
+    </record>
+    
+    <record model="ir.ui.view" id="product.product_kanban_view_inherit">
+        <field name="name">Product Kanban Inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_kanban_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+            	<t t-if="record.vintages.raw_value"> - <field name="vintages"/></t> 
+            </field>
+        </field>
+    </record>
+    </data>
+</openerp>
