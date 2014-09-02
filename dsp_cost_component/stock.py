@@ -395,7 +395,9 @@ class stock_picking_in(osv.osv):
             'journal_id'            : fields.many2one('account.journal', 'Bank/ Cash'),
             'cost_component_line'   : fields.one2many('cost.component', 'picking_id', 'Contains'),
             'additional_cost'       : fields.selection([('no', 'Non Cost Component'), ('yes', 'With Cost Component')], 'Cost Component', readonly=False),
-            
+            'person_name'           : fields.char('Person Name', size=128),
+            'date_confirmed'        : fields.date('Input Date'),
+            'file_confirmed'        : fields.binary('Input File'),
                 }
     
     _defaults = {
