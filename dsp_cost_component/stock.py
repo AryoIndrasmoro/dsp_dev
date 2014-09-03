@@ -24,7 +24,7 @@ class stock_picking(osv.osv):
             'person_name'           : fields.char('Person Name', size=128),
             'date_confirmed'        : fields.date('Input Date'),
             'file_confirmed'        : fields.binary('Input File'),
-            'additional_cost_int'   : fields.selection([('no','Non Cost Component'), ('yes','With Cost Component')], 'Cost Component', readonly=False),
+            'additional_cost_int'   : fields.selection([('no','Without Cost Component'), ('yes','With Cost Component')], 'Cost Component', readonly=False),
             
                 }
     
@@ -50,6 +50,7 @@ class stock_picking(osv.osv):
         wf_service = netsvc.LocalService("workflow")
         for pick in self.browse(cr, uid, ids, context=context):
             new_picking = None
+            print "pick type ", pick.type
             complete, too_many, too_few = [], [], []
             move_product_qty, prodlot_ids, product_avail, partial_qty, product_uoms = {}, {}, {}, {}, {}
             
@@ -57,11 +58,11 @@ class stock_picking(osv.osv):
             if not pick.person_name or not pick.date_confirmed or not pick.file_confirmed:
                 raise osv.except_osv(_('Warning Confirmation !'), _('Please complete the fields of Confirmation tab form!"'))
                 return False
-
-				
+            else:
+                self.dsp_send_email(cr, uid, pick.id, context=context)				
             
             # Create Cost Component Journal
-             
+            total_credit = 0.0
             if pick.type in ['in','internal'] and pick.additional_cost == 'yes' or pick.type in ['in','internal'] and  pick.additional_cost_int == 'yes':
                 
                 move_pool = self.pool.get('account.move')
@@ -85,8 +86,7 @@ class stock_picking(osv.osv):
                     }
                 
                 move_id = move_pool.create(cr, uid, move)
-                
-                total_credit = 0.0
+                                
                 for cost_component_line in pick.cost_component_line:
                     #print "+++++++++++++++++++++", cost_component_line.name or '/'
                     debit = cost_component_line.quantity * cost_component_line.amount
@@ -125,25 +125,25 @@ class stock_picking(osv.osv):
                 move_pool.post(cr, uid, [move_id], context={})
                 
             
-            for move in pick.move_lines:
-                if move.state in ('done', 'cancel'):
-                    continue
-                partial_data = partial_datas.get('move%s' % (move.id), {})
-                product_qty = partial_data.get('product_qty', 0.0)
-                move_product_qty[move.id] = product_qty
-                product_uom = partial_data.get('product_uom', False)
-                product_price = partial_data.get('product_price', 0.0)
-                product_currency = partial_data.get('product_currency', False)
-                prodlot_id = partial_data.get('prodlot_id')
-                prodlot_ids[move.id] = prodlot_id
-                product_uoms[move.id] = product_uom
-                partial_qty[move.id] = uom_obj._compute_qty(cr, uid, product_uoms[move.id], product_qty, move.product_uom.id)
-                if move.product_qty == partial_qty[move.id]:
-                    complete.append(move)
-                elif move.product_qty > partial_qty[move.id]:
-                    too_few.append(move)
-                else:
-                    too_many.append(move)
+                for move in pick.move_lines:
+                    if move.state in ('done', 'cancel'):
+                        continue
+                    partial_data = partial_datas.get('move%s' % (move.id), {})
+                    product_qty = partial_data.get('product_qty', 0.0)
+                    move_product_qty[move.id] = product_qty
+                    product_uom = partial_data.get('product_uom', False)
+                    product_price = partial_data.get('product_price', 0.0)
+                    product_currency = partial_data.get('product_currency', False)
+                    prodlot_id = partial_data.get('prodlot_id')
+                    prodlot_ids[move.id] = prodlot_id
+                    product_uoms[move.id] = product_uom
+                    partial_qty[move.id] = uom_obj._compute_qty(cr, uid, product_uoms[move.id], product_qty, move.product_uom.id)
+                    if move.product_qty == partial_qty[move.id]:
+                        complete.append(move)
+                    elif move.product_qty > partial_qty[move.id]:
+                        too_few.append(move)
+                    else:
+                        too_many.append(move)
 
                 # Average price computation
                 if (pick.type == 'in') and (move.product_id.cost_method == 'average'):
@@ -182,24 +182,23 @@ class stock_picking(osv.osv):
                                 total_qty = 0.0
                                 for move in pick.move_lines:
                                     partial_data = partial_datas.get('move%s' % (move.id), {})
-                                    product_qty = partial_data.get('product_qty', 0.0)
-                                    
+                                    product_qty = partial_data.get('product_qty', 0.0)                                    
                                     total_qty += product_qty
                                 
-                                print "total_qty>>>>>>>>>>>>>>>>>>", total_qty, total_credit, total_credit * (qty/total_qty)
+                                # print "total_qty>>>>>>>>>>>>>>>>>>", total_qty, total_credit, total_credit * (qty/total_qty)
                                 cost_component_each_item = total_credit * (qty/total_qty) or 0.0
                                 new_std_price = ((amount_unit * product_avail[product.id])\
                                     + (new_price * qty) + cost_component_each_item) / (product_avail[product.id] + qty)
                                 
-                                print "amount_unit", amount_unit
-                                print "product_avail", product_avail
-                                print "new_price", new_price
-                                print "qty", qty
-                                print "cost_component_each_item", cost_component_each_item
+                                #print "amount_unit", amount_unit
+                                #print "product_avail", product_avail
+                                #print "new_price", new_price
+                                #print "qty", qty
+                                #print "cost_component_each_item", cost_component_each_item
                                 
                                 
                                 
-                                print "new_std_price", new_std_price    
+                                #print "new_std_price", new_std_price    
                                                                                    
                             
                             
@@ -210,8 +209,8 @@ class stock_picking(osv.osv):
                         product_obj.write(cr, uid, [product.id], {
                                                                   'standard_price'  : new_std_price,
                                                                   'list_price'      : new_std_price,
-                                                                  'base_cost'       : new_std_price,
-                                                                  'real_price'      : new_std_price + (new_std_price * product.margin),
+                                                                  'base_cost'       : new_std_price,                                                                  
+                                                                  'real_price'      : new_std_price + (new_std_price * product.margin),                                                                                                                                                            
                                                                   })
 
                         # Record the values that were chosen in the wizard, so they can be
@@ -221,52 +220,51 @@ class stock_picking(osv.osv):
                                  'price_currency_id': product_currency})
                 
                 # Internal Update Cost Price
-                elif (pick.type == 'internal') and (move.product_id.cost_method == 'average'):
+                elif (pick.type == 'internal') and (move.product_id.cost_method == 'average'):                                                       
                     product = product_obj.browse(cr, uid, move.product_id.id)
                     #move_currency_id = move.company_id.currency_id.id
                     #context['currency_id'] = move_currency_id
                     qty = uom_obj._compute_qty(cr, uid, product_uom, product_qty, product.uom_id.id)
-                    
+                    total_qty = 0.0
                     if pick.additional_cost_int == 'yes':
                         product = product_obj.browse(cr, uid, move.product_id.id)
                         amount_unit = product.price_get('standard_price', context=context)[product.id]
-                        product_avail[product.id] = product.qty_available
-                        
+                        product_avail[product.id] = product.qty_available                        
                         
                         ####Change
                         #cr.execute("select sum(product_qty) from stock_move where picking_id = %s" % pick.id)
                         #total_qty = cr.fetchone()[0]
-                        
-                        total_qty = 0.0
+                                                
                         for move in pick.move_lines:
                             partial_data = partial_datas.get('move%s' % (move.id), {})
                             product_qty = partial_data.get('product_qty', 0.0)
                             
                             total_qty += product_qty
                         
-                        print "total_qty>>>>>>>>>>>>>>>>>> INTERNAL", total_qty, total_credit, total_credit * (total_qty)
-                        cost_component_each_item = total_credit * (qty/total_qty) or 0.0
-                        new_std_price = ((amount_unit * product_avail[product.id])\
-                            + cost_component_each_item) / (product_avail[product.id])
+                        print "total_qty>>>>>>>>>>>>>>>>>> INTERNAL", total_qty, total_credit, total_credit * (total_qty), qty, amount_unit, cost_component_line.amount
+                        result_jkt_cost = 0.0                        
+                        cost_component_each_item = total_credit / (qty) or 0.0
+                        if product.jkt_cost == 0:
+                            product.jkt_cost = product.base_cost
+                        new_std_price = product.base_cost + cost_component_each_item
+                        print "jkt_cost ", product.jkt_cost,product.base_cost, cost_component_each_item                                         
                         
-                        print "amount_unit INTERNAL", amount_unit
-                        print "product_avail INTERNAL", product_avail
-                        #print "new_price INTERNAL", new_price
-                        print "qty INTERNAL", qty
-                        print "cost_component_each_item INTERNAL", cost_component_each_item
-                        
-                        
-                        
-                        print "new_std_price", new_std_price
+                        #=======================================================
+                        # print "amount_unit INTERNAL", amount_unit
+                        # print "product_avail INTERNAL", product_avail
+                        # #print "new_price INTERNAL", new_price
+                        # print "qty INTERNAL", qty
+                        # print "cost_component_each_item INTERNAL", cost_component_each_item
+                        # 
+                        # 
+                        # 
+                        # print "new_std_price", new_std_price
+                        #=======================================================
                         
                         #product_obj.write(cr, uid, [product.id], {'standard_price': new_std_price})
                         ##EDIT TO
                         product_obj.write(cr, uid, [product.id], {
-                                                                  'standard_price'  : new_std_price,
-                                                                  'list_price'      : new_std_price,
-                                                                  'base_cost'       : new_std_price,
-                                                                  'real_price'      : new_std_price + (new_std_price * product.margin),
-                                                                  
+                                                                  'jkt_cost'        : new_std_price,                                                                                                                                
                                                                   })
 
             for move in too_few:
@@ -349,24 +347,30 @@ class stock_picking(osv.osv):
     
     
 #     #Send mail sans queue
-    def send_email(self, cr, uid, ids, context=None):
-         email_template_obj = self.pool.get('email.template')
-         template_ids = 13 #email_template_obj.search(cr, uid, [('model_id.model', '=', 'sale.order')])
-         if template_ids:
-             for id in ids:
-                 values = email_template_obj.generate_email(cr, uid, template_ids, id, context=context)
-                 print "values::  ", values 
-                 values['subject'] = "Test"
-                 values['email_to'] = "hilfforever@gmail.com"
-                 #values['email_cc'] = your_cc_address
-                 values['body_html'] = "your_body_html_part"
-                 #values['body'] = your_body_html_part
-     
-                 mail_mail_obj = self.pool.get('mail.mail')
-                 msg_id = mail_mail_obj.create(cr, uid, values, context=context)
-                 if msg_id:
-                     mail_mail_obj.send(cr, uid, [msg_id], context=context)
-         return True   
+    def dsp_send_email(self, cr, uid, pick_id, context=None):
+        email_template_obj = self.pool.get('email.template')
+        template_ids = email_template_obj.search(cr, uid, [('model_id.model', '=','stock.picking.out')], context=context)
+        body_html = self.pool.get('email.template').browse(cr, uid, template_ids[0],context=context).body_html                
+        current_email = self.pool.get('res.users').browse(cr, uid, uid, context=context).email
+        name = self.browse(cr, uid, pick_id, context=context).name        
+        origin = self.browse(cr, uid, pick_id, context=context).origin
+        type = self.browse(cr, uid, pick_id, context=context).type
+        file_confirmed = self.browse(cr, uid, pick_id, context=context).file_confirmed
+        
+        if template_ids:
+            values = email_template_obj.generate_email(cr, uid, template_ids[0], pick_id , context=context)
+            values['subject'] = 'Delivery Order ' + str(name) + str(type)
+            values['email_from'] = current_email
+            values['email_to'] = 'samuel.alfius@gmail.com'
+            values['body_html'] = str(name) + '---' + str(origin)
+            values['body'] = 'body'
+            values['res_id'] = False
+            values['attachment'] = file_confirmed
+            mail_mail_obj = self.pool.get('mail.mail')
+            msg_id = mail_mail_obj.create(cr, uid, values, context=context)            
+            if msg_id:
+                  mail_mail_obj.send(cr, uid, [msg_id], context=context) 
+        return True
  
     _defaults = {
             'additional_cost'       : 'no',
