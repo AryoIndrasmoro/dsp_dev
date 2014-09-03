@@ -77,37 +77,39 @@ import openerp.addons.decimal_precision as dp
 #
 #product_template()
 
-class product_template(osv.osv):
-    _inherit = "product.template"
-    _description = "Product Template"
-    
-    def _compute_suggest_price(self, cr, uid, ids, field_names, args, context=None):
-        print """Compute the amounts in the currency of the user
-        """
-        if context is None:
-            context={}
-        res = {}
-        for product in self.browse(cr, uid, ids, context=context):
-            jkt_cost       = product.jkt_cost                       
-            margin          = product.jkt_cost * (product.margin/ 100)
-            suggest_price   = jkt_cost + margin
-            
-            
-            res[product.id] = {
-                    'suggest_price' : suggest_price,
-                    'real_price'    : suggest_price,
-                        }
-        return res
-    
-    
-    _columns = {
-            'jkt_cost'          : fields.float('JKT Cost', digits_compute=dp.get_precision('Product Price')),
-            'base_cost'         : fields.float('SG Cost', digits_compute=dp.get_precision('Product Price')),
-            'margin'            : fields.float('Margin (%)', digits_compute=dp.get_precision('Product Price')),
-            'suggest_price'     : fields.function(_compute_suggest_price, string="Suggest Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
-            'move_cost'         : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                    
-            'real_price'        : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                                
-            #'real_price'    : fields.function(_compute_suggest_price, string="Real Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
-                }
-
-product_template()
+#===============================================================================
+# class product_template(osv.osv):
+#     _inherit = "product.template"
+#     _description = "Product Template"
+#     
+#     def _compute_suggest_price(self, cr, uid, ids, field_names, args, context=None):
+#         print """Compute the amounts in the currency of the user
+#         """
+#         if context is None:
+#             context={}
+#         res = {}
+#         for product in self.browse(cr, uid, ids, context=context):
+#             jkt_cost       = product.jkt_cost                       
+#             margin          = product.jkt_cost * (product.margin/ 100)
+#             suggest_price   = jkt_cost + margin
+#             
+#             
+#             res[product.id] = {
+#                     'suggest_price' : suggest_price,
+#                     'real_price'    : suggest_price,
+#                         }
+#         return res
+#     
+#     
+#     _columns = {
+#             'jkt_cost'          : fields.float('JKT Cost', digits_compute=dp.get_precision('Product Price')),
+#             'base_cost'         : fields.float('SG Cost', digits_compute=dp.get_precision('Product Price')),
+#             'margin'            : fields.float('Margin (%)', digits_compute=dp.get_precision('Product Price')),
+#             'suggest_price'     : fields.function(_compute_suggest_price, string="Suggest Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
+#             'move_cost'         : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                    
+#             'real_price'        : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                                
+#             #'real_price'    : fields.function(_compute_suggest_price, string="Real Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
+#                 }
+# 
+# product_template()
+#===============================================================================
