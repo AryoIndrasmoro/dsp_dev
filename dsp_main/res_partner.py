@@ -26,7 +26,7 @@ class res_partner(osv.osv):
     _inherit = 'res.partner'
     _columns = {
         'customer': fields.boolean('Outlets/Customers', help="Check this box if this contact is a customer / outlet."),        
-        'discount': fields.selection([(5, '5'),(10,'10'),(15,'15'),(20,'20'),(25,'25'),(30,'30') ], 'Discount (%)')
+        'discount': fields.selection([(5, '5'),(10,'10'),(15,'15'),(20,'20'),(25,'25'),(30,'30') ], 'Sales Discount (%)')
     }
 
 res_partner()
