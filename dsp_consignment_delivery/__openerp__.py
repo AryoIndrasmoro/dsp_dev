@@ -31,7 +31,7 @@
                     """,
     
     "images" : [],
-    'depends': [ 'stock','sale','sale_stock','dsp'],
+    'depends': [ 'stock','sale','sale_stock','dsp_main'],
     'init_xml': [
     ],
     'demo_xml': [

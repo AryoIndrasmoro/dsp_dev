@@ -88,9 +88,9 @@ class product_template(osv.osv):
             context={}
         res = {}
         for product in self.browse(cr, uid, ids, context=context):
-            base_cost       = product.base_cost
-            margin          = product.base_cost * (product.margin/ 100)
-            suggest_price   = base_cost + margin
+            jkt_cost       = product.jkt_cost                       
+            margin          = product.jkt_cost * (product.margin/ 100)
+            suggest_price   = jkt_cost + margin
             
             
             res[product.id] = {
@@ -101,11 +101,13 @@ class product_template(osv.osv):
     
     
     _columns = {
-            'base_cost'     : fields.float('Base Cost', digits_compute=dp.get_precision('Product Price')),
-            'margin'        : fields.float('Margin (%)', digits_compute=dp.get_precision('Product Price')),
-            'suggest_price' : fields.function(_compute_suggest_price, string="Suggest Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
+            'jkt_cost'          : fields.float('JKT Cost', digits_compute=dp.get_precision('Product Price')),
+            'base_cost'         : fields.float('SG Cost', digits_compute=dp.get_precision('Product Price')),
+            'margin'            : fields.float('Margin (%)', digits_compute=dp.get_precision('Product Price')),
+            'suggest_price'     : fields.function(_compute_suggest_price, string="Suggest Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
+            'move_cost'         : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                    
+            'real_price'        : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                                
             #'real_price'    : fields.function(_compute_suggest_price, string="Real Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
-            'real_price'    : fields.float('Real Price', digits_compute=dp.get_precision('Product Price')),
                 }
 
 product_template()
