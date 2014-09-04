@@ -64,7 +64,7 @@ class product_product(osv.osv):
         'type_id': fields.many2one('product.type', 'Type', required=False, ondelete='cascade',
             help="Product Type."),   
         'appelation_id': fields.many2one('product.appelation', 'Appelation', required=False, ondelete='cascade',
-            help="Product Appelation."),                                                                
+            help="Product Appelation."),                                                           
                                         
     }
     
