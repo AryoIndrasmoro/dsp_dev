@@ -13,10 +13,9 @@ class sale_order(osv.osv):
     _inherit = "sale.order"
     
     _columns = { 
-            'dsp_price_list_id': fields.selection([('standard', 'Suggest Price'), ('real', 'Real Price'), ('outlet', 'Outlet Price')], 'DSP Price List'),
+            'dsp_price_list_id': fields.selection([('real', 'Real Price'), ('outlet', 'Outlet Price')], 'DSP Price List'),
                 }
-    
-    
+        
     def onchange_partner_id(self, cr, uid, ids, part, context=None):
         if not part:
             return {'value': {'partner_invoice_id': False, 'partner_shipping_id': False,  'payment_term': False, 'fiscal_position': False}}

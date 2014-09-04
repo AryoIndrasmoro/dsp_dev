@@ -6,7 +6,7 @@ class res_partner(osv.osv):
     _inherit = 'res.partner'
     
     _columns = {
-            'dsp_price_list_id' : fields.selection([('standard', 'Suggest Price'), ('real', 'Real Price'), ('outlet', 'Outlet Price')], 'DSP Price List'),
+            'dsp_price_list_id' : fields.selection([('standard', 'Suggest Price'), ('real', 'Real Price'), ('outlet', 'Outlet Price')], 'DSP Price List', invisible="1"),
             'outlet_margin'     : fields.float('Outlet Margin (%)', digits_compute=dp.get_precision('Product Price')),
                 }
     
