@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-        <report id="stock.report_picking_list_out" model="stock.picking.out" name="stock.picking.list.out" string="Delivery Slip" rml="dsp_main/report/picking.rml"/>
-        <report id="report_picking_list_out_webkit_dsp" model="stock.picking.out" name="stock.list.out.webkit.dsp" string="Delivery Slip Webkit" file="dsp_main/report/delivery_slip.mako" report_type="webkit" />
+
     </data>
 </openerp>
