@@ -6,4 +6,4 @@ class sale_report(osv.osv):
     _columns = {
                 'discount': fields.float('Discount')
                 }
-#sale_report()    
+sale_report()    
