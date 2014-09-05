@@ -5,7 +5,7 @@
 		<report 
 			id="sale_analysis_form" string="Sale Analysis Report" model="sale.report"
 			name="sale.analysis.form" 
-			file="dsp/report/sale_analysis_report.mako"
+			file="dsp_main/report/sale_analysis_report.mako"
 			report_type="webkit"
 			auto="False"
 			header="False"			

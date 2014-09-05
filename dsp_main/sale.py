@@ -6,11 +6,11 @@ class sale_order(osv.osv):
     _inherit = "sale.order"
     _description = "Sales Order Inherit DSP"
     _columns ={
-    'partner_id': fields.many2one('res.partner', 'Outlet/Customer', readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, required=True, change_default=True, select=True, track_visibility='always'),
-    'sale_type': fields.selection([('Promo', 'Promo'), ('Consignment', 'Consignment'),('Outlet (Direct Selling)','Outlet (Direct Selling)') ], 'Sale Type'),
-    'person_name'           : fields.char('Person Name', size=128),
-    'date_confirmed'        : fields.date('Input Date'),
-    'file_confirmed'        : fields.binary('Input File'),    
+               'partner_id'     : fields.many2one('res.partner', 'Outlet/Customer', readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, required=True, change_default=True, select=True, track_visibility='always'),
+               'sale_type'      : fields.selection([('Promo', 'Promo'), ('Consignment', 'Consignment'),('Outlet (Direct Selling)','Outlet (Direct Selling)') ], 'Sale Type'),
+               'person_name'    : fields.char('Person Name', size=128),
+               'date_confirmed' : fields.date('Input Date'),
+               'file_confirmed' : fields.binary('Input File'),    
     }
     
     def create(self, cr, uid, vals, context=None):
@@ -33,6 +33,10 @@ class sale_order(osv.osv):
             
         return super(sale_order, self).write(cr, uid, ids, vals, context=context)                                
         
+    _defaults = {
+                 'sale_type' : 'Outlet (Direct Selling)',
+            }
+    
 sale_order()
 
 

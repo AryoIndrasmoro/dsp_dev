@@ -17,7 +17,7 @@ class stock_picking(osv.osv):
     _inherit = 'stock.picking'
 
     _columns = {
-            'consignment'   : fields.selection([('normal','Sale Order'), ('consignment','Consignment')], 'Consignment'),
+            'consignment'   : fields.selection([('normal','Sale Order'), ('consignment','Consignment')], 'Consignment'),            
                 }
 
 stock_picking()
