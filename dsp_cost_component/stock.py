@@ -375,7 +375,8 @@ class stock_picking(osv.osv):
     _defaults = {
             'additional_cost'       : 'no',
             'additional_cost_int'   : 'no',
-            'internal_move_type'    : 'regular'
+            'internal_move_type'    : 'regular',
+            'move_type'             : 'one',
                  }
 
 stock_picking()
