@@ -25,9 +25,9 @@ class stock_picking(osv.osv):
             'date_confirmed'        : fields.date('Input Date'),
             'file_confirmed'        : fields.binary('Input File'),
             'additional_cost_int'   : fields.selection([('no','Without Cost Component'), ('yes','With Cost Component')], 'Cost Component', readonly=False),
-            
+            'internal_move_type'    : fields.selection([('regular','Regular'), ('consignment','Consignment')], 'Move Type'),
                 }
-    
+        
     # FIXME: needs refactoring, this code is partially duplicated in stock_move.do_partial()!
     def do_partial(self, cr, uid, ids, partial_datas, context=None):
         print "Picking In>>>>>>>>>>>>>>>>>>>>>."
@@ -375,6 +375,8 @@ class stock_picking(osv.osv):
     _defaults = {
             'additional_cost'       : 'no',
             'additional_cost_int'   : 'no',
+            'internal_move_type'    : 'regular',
+            'move_type'             : 'one',
                  }
 
 stock_picking()
@@ -428,3 +430,45 @@ class cost_component(osv.osv):
 
     
 cost_component()
+
+class stock_move(osv.osv):    
+    _inherit = "stock.move"    
+    
+    def onchange_product_id(self, cr, uid, ids, prod_id=False, loc_id=False,
+                            loc_dest_id=False, partner_id=False):
+        """ On change of product id, if finds UoM, UoS, quantity and UoS quantity.
+        @param prod_id: Changed Product id
+        @param loc_id: Source location id
+        @param loc_dest_id: Destination location id
+        @param partner_id: Address id of partner
+        @return: Dictionary of values
+        """
+        if not prod_id:
+            return {}
+        user = self.pool.get('res.users').browse(cr, uid, uid)
+        lang = user and user.lang or False
+        if partner_id:
+            addr_rec = self.pool.get('res.partner').browse(cr, uid, partner_id)
+            if addr_rec:
+                lang = addr_rec and addr_rec.lang or False
+        ctx = {'lang': lang}
+
+        product = self.pool.get('product.product').browse(cr, uid, [prod_id], context=ctx)[0]
+        uos_id  = product.uos_id and product.uos_id.id or False
+        result = {
+            'product_uom': product.uom_id.id,
+            'product_uos': uos_id,
+            'product_qty': 1.00,
+            'product_uos_qty' : self.pool.get('stock.move').onchange_quantity(cr, uid, ids, prod_id, 1.00, product.uom_id.id, uos_id)['value']['product_uos_qty'],
+            'prodlot_id' : False,
+            'price_unit' : product.real_price,
+        }
+        if not ids:
+            result['name'] = product.partner_ref
+        if loc_id:
+            result['location_id'] = loc_id
+        if loc_dest_id:
+            result['location_dest_id'] = loc_dest_id
+        return {'value': result}
+
+stock_move()    

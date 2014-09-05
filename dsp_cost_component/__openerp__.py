@@ -37,8 +37,7 @@
     'demo_xml': [
     ],
     'update_xml': [
-        'stock_view.xml',
-        'product_view.xml'
+        'stock_view.xml',        
         
     ],
     

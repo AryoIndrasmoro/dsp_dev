@@ -149,7 +149,7 @@ class product_template(osv.osv):
             'jkt_cost'          : fields.float('JKT Cost', digits_compute=dp.get_precision('Product Price')),
             'base_cost'         : fields.float('SG Cost', digits_compute=dp.get_precision('Product Price')),
             'margin'            : fields.float('Margin (%)', digits_compute=dp.get_precision('Product Price')),
-            'suggest_price'     : fields.function(_compute_suggest_price, string="Suggest Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
+            'suggest_price'     : fields.function(_compute_suggest_price, string="Suggested Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),
             'move_cost'         : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                    
             'real_price'        : fields.float('Product Real Price', digits_compute=dp.get_precision('Product Price')),                                
             #'real_price'    : fields.function(_compute_suggest_price, string="Real Price", type='float', digits_compute=dp.get_precision('Account'), multi="_compute_amounts"),

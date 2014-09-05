@@ -49,8 +49,7 @@ This module covers: test
         'view/stock_view.xml',
         'view/purchase_view.xml',        
         'view/sale_view.xml',
-        'report/stock_report.xml',
-        'report/sale_report.xml',
+        'report/stock_report.xml',        
         'report/sale_report_view.xml',
         
     ],

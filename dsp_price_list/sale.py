@@ -35,7 +35,8 @@ class sale_order(osv.osv):
             'payment_term': payment_term,
             'fiscal_position': fiscal_position,
             'user_id': dedicated_salesman,
-            'dsp_price_list_id' : dsp_price_list_id 
+            'dsp_price_list_id' : dsp_price_list_id, 
+            'sale_type' : 'Outlet (Direct Selling)',
         }
         if pricelist:
             val['pricelist_id'] = pricelist
@@ -43,7 +44,7 @@ class sale_order(osv.osv):
     
     
     _defaults = {
-            'dsp_price_list_id' : 'standard',
+            'dsp_price_list_id' : 'real',
                  }
   
 sale_order()
@@ -55,34 +56,8 @@ class sale_order_line(osv.osv):
     _columns = {
             'product_dsp_id': fields.many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True),
             'product_id': fields.many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], change_default=True, invisible=True),
+            'cons_doc': fields.many2one('stock.picking', 'Internal Moves', domain=[('type', '=', 'internal')]),
                 }
-    
-    def onchange_product_dsp_id(self, cr, uid, ids, product_dsp_id, price_list, partner_id, context=None):
-        print "LLLLLLLLLLLLLLLLL", price_list
-        if not product_dsp_id:
-            
-            result = {'value': {
-                    'product_id' : product_dsp_id,
-                    }
-                }
-            
-            return result
-        partner_id = self.pool.get('res.partner').browse(cr, uid, partner_id, context=None)
-        product = self.pool.get('product.product').browse(cr, uid, product_dsp_id, context=None)
-        
-        if price_list == 'standard':
-            price_unit = product.suggest_price
-        elif price_list == 'real':
-            price_unit = product.real_price
-        elif price_list == 'outlet':
-            price_unit = product.base_cost + (product.base_cost * partner_id.outlet_margin/ 100)
-           
-        result = {'value': {
-                    'product_id' : product_dsp_id,
-                    'price_unit' : price_unit,
-                    }
-                } 
-        return result
     
     def product_id_change(self, cr, uid, ids, pricelist, product, qty=0,
             uom=False, qty_uos=0, uos=False, name='', partner_id=False,
@@ -180,17 +155,75 @@ class sale_order_line(osv.osv):
                 warn_msg = _("Cannot find a pricelist line matching this product and quantity.\n"
                         "You have to change either the product, the quantity or the pricelist.")
 
-                warning_msgs += _("No valid pricelist line found ! :") + warn_msg +"\n\n"
-            
-            ###################Non Active###############
-            #else:
-            #    result.update({'price_unit': price})
-            
+                warning_msgs += _("No valid pricelist line found ! :") + warn_msg +"\n\n"            
+                
         if warning_msgs:
             warning = {
                        'title': _('Configuration Error!'),
                        'message' : warning_msgs
                     }
         return {'value': result, 'domain': domain, 'warning': warning}
+    
+    def onchange_product_dsp_id(self, cr, uid, ids, product_dsp_id, sale_type, price_list, partner_id, context=None):
+        price_unit = 0.0
+        discount = 0.0
+        print "LLLLLLLLLLLLLLLLL", sale_type
+        if not product_dsp_id:
+            
+            result = {'value': {
+                    'product_id' : product_dsp_id,
+                    }
+                }
+            
+            return result
+        partner_id = self.pool.get('res.partner').browse(cr, uid, partner_id, context=None)
+        product = self.pool.get('product.template').browse(cr, uid, product_dsp_id, context=None)
+            
+        if sale_type == 'Promo':
+            discount = 100
+        else:
+            discount = 0                
+        
+        print product.jkt_cost
+        print partner_id.outlet_margin
+        print product.real_price        
+                
+        if price_list == 'real':
+            price_unit = product.real_price
+        elif price_list == 'outlet':
+            price_unit = product.jkt_cost + (product.jkt_cost * partner_id.outlet_margin/ 100)
+        
+        print price_unit
+        
+        result = {'value': {
+                    'product_id' : product_dsp_id,
+                    'price_unit' : price_unit,     
+                    'discount'   : discount               
+                    }
+                } 
+        return result 
+    
+    def onchange_cons_doc(self, cr, uid, ids, cons_doc, product_dsp_id, sale_type, partner_id, context=None):
+        result = ''                    
+        if not product_dsp_id:
+            raise osv.except_osv(_('Warning Confirmation !'), _('Please select the Product first!"'))
+            return False            
+        else:                 
+            product = self.pool.get('product.template').browse(cr, uid, product_dsp_id, context=None)                            
+            move_line = self.pool.get('stock.picking').browse(cr, uid, cons_doc, context=context).move_lines
+            move_name = self.pool.get('stock.move').browse(cr, uid, cons_doc, context=context)            
+            for line in move_line:
+                if line.name == product.name:
+                    result = {'value': {
+                        'price_unit' : line.price_unit,                            
+                        }
+                    }                        
+                else:
+                    raise osv.except_osv(_('Warning Confirmation !'), _('This Internal moves has no line contains the product!"'))
+                    result = {'value': {
+                        'price_unit' : 0,                            
+                        }
+                    }                                                                           
+        return result            
             
 sale_order_line()
